@@ -1,0 +1,33 @@
+{% load static %}
+
+{% if messages %}
+    {% for message in messages %}
+        <div id="toast-success" class="fixed bottom-5 right-5 z-50 w-full max-w-md opacity-0 transition-opacity duration-500" role="alert">
+            <div class="bg-green-50 p-4 rounded-md border-b-4 border-green-700 shadow-lg">
+                <div class="flex items-start gap-2.5">
+
+                <!-- Success Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5 fill-green-700 overflow-visible"
+                    viewBox="0 0 330 330" aria-hidden="true">
+                    <path d="M165 0C74.019 0 0 74.019 0 165s74.019 165 165 165 165-74.019 165-165S255.981 0 165 0m0 300c-74.44 0-135-60.561-135-135S90.56 30 165 30s135 60.561 135 135-60.561 135-135 135" />
+                    <path d="m226.872 106.664-84.854 84.853-38.89-38.891c-5.857-5.857-15.355-5.858-21.213-.001-5.858 5.858-5.858 15.355 0 21.213l49.496 49.498a15 15 0 0 0 10.606 4.394h.001c3.978 0 7.793-1.581 10.606-4.393l95.461-95.459c5.858-5.858 5.858-15.355 0-21.213s-15.355-5.859-21.213-.001" />
+                </svg>
+
+                <div>
+                    <p class="text-sm text-slate-900 font-medium leading-tight">{{ message }}</p>
+                    <p class="text-xs mt-1 text-slate-600">System Nofication</p>
+                </div>
+
+                <!-- Dismiss Button -->
+                <button type="button" aria-label="Dismiss alert"
+                    class="ml-auto flex items-center opacity-70 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 cursor-pointer fill-slate-500"
+                    aria-hidden="true" viewBox="0 0 329.269 329">
+                    <path d="M194.8 164.77 323.013 36.555c8.343-8.34 8.343-21.825 0-30.164-8.34-8.34-21.825-8.34-30.164 0L164.633 134.605 36.422 6.391c-8.344-8.34-21.824-8.34-30.164 0-8.344 8.34-8.344 21.824 0 30.164l128.21 128.215L6.259 292.984c-8.344 8.34-8.344 21.825 0 30.164a21.27 21.27 0 0 0 15.082 6.25c5.46 0 10.922-2.09 15.082-6.25l128.21-128.214 128.216 128.214a21.27 21.27 0 0 0 15.082 6.25c5.46 0 10.922-2.09 15.082-6.25 8.343-8.34 8.343-21.824 0-30.164zm0 0" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        </div>
+    {% endfor %}
+{% endif %} 

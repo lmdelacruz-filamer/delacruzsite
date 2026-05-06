@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const toast = document.getElementById('toast-success');
+    const toast = document.getElementById('toast-notification'); 
 
     if (toast) {
         setTimeout(() => {
@@ -7,13 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
             toast.classList.add('opacity-100');
         }, 100);
 
+        
         setTimeout(() => {
             toast.classList.remove('opacity-100');
             toast.classList.add('opacity-0');
-
             setTimeout(() => {
                 toast.style.display = 'none';
-            }, 500); 
+            }, 500);
 
         }, 6000);
     }

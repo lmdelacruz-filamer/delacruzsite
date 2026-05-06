@@ -8,12 +8,8 @@ from django.contrib.auth.hashers import make_password
 
 def gender_list(request):
     try:
-        genders = Genders.objects.all() #SELECT * FROM tbl_genders;
-
-        data = {
-            'genders': genders
-        }
-
+        genders = Genders.objects.all()
+        data = {'genders': genders}
         return render(request, 'gender/GendersList.html', data)
     except Exception as e:
         return HttpResponse(f'Error occurred during load genders: {e}')
@@ -22,8 +18,7 @@ def add_gender(request):
     try:
         if request.method == 'POST':
             gender = request.POST.get('gender')
-
-            Genders.objects.create(gender=gender).save() # INSERT INTO tbl_genders(gender) VALUES(gender);
+            Genders.objects.create(gender=gender).save()
             messages.success(request, 'Gender added successfully!')
             return redirect('/gender/list')
         else:
@@ -33,66 +28,41 @@ def add_gender(request):
 
 def edit_gender(request, genderId):
     try:
+        genderObj = Genders.objects.get(pk=genderId)
         if request.method == 'POST':
-            genderObj = Genders.objects.get(pk=genderId) # SELECT * FROM tbl_genders WHERE gender_id = genderId;
-
             gender = request.POST.get('gender')
-
             genderObj.gender = gender
-            genderObj.save() # UPDATE tbl_genders SET gender = gender WHERE gender_id = genderId;
-
+            genderObj.save()
             messages.success(request, 'Gender updated successfully!')
 
-            data = {
-                'gender': genderObj
-            }
-
-            return render(request, 'gender/EditGender.html', data)
-        else:
-            genderObj = Genders.objects.get(pk=genderId) # SELECT * FROM tbl_genders WHERE gender_id = genderId;
-
-            data = {
-                'gender': genderObj
-            }
-
-            return render(request, 'gender/EditGender.html', data)
-        
+        data = {'gender': genderObj}
+        return render(request, 'gender/EditGender.html', data)
     except Exception as e:
-        return HttpResponse(f'Error occurred during edit gender: {e}') 
-    
+        return HttpResponse(f'Error occurred during edit gender: {e}')
+
 def delete_gender(request, genderId):
     try:
+        genderObj = Genders.objects.get(pk=genderId)
         if request.method == 'POST':
-            genderObj = Genders.objects.get(pk=genderId) # SELECT * FROM tbl_genders WHERE gender_id = genderId;
-            genderObj.delete() # DELETE FROM tbl_genders WHERE gender_id = genderId;
-
+            genderObj.delete()
             messages.success(request, 'Gender deleted successfully!')
             return redirect('/gender/list')
-        else:        
-            genderObj = Genders.objects.get(pk=genderId) # SELECT * FROM tbl_genders WHERE gender_id = genderId;
 
-            data = {
-                'gender': genderObj
-            }
-            
-            return render(request, 'gender/DeleteGender.html', data)
+        data = {'gender': genderObj}
+        return render(request, 'gender/DeleteGender.html', data)
     except Exception as e:
         return HttpResponse(f'Error occurred during delete gender: {e}')
 
 def user_list(request):
     try:
-        userObj = Users.objects.select_related('gender') # SELECT * FROM tbl_users INNER JOIN tbl_genders ON tbl_users.gender_id = tbl.genders.gender_id;
-
-        data = {
-            'users': userObj
-        }
-    
+        userObj = Users.objects.select_related('gender')
+        data = {'users': userObj}
         return render(request, 'user/UsersList.html', data)
     except Exception as e:
         return HttpResponse(f'Error occurred during load users: {e}')
 
 def add_user(request):
-    try:    
+    try:
         if request.method == 'POST':
             fullName = request.POST.get('full_name')
             gender = request.POST.get('gender')
@@ -104,8 +74,18 @@ def add_user(request):
             password = request.POST.get('password')
             confirmPassword = request.POST.get('confirm_password')
 
-            # if password != confirmPassword:
-                # If password and confrim password do not match, show error message
+            genderObj = Genders.objects.all()
+            data = {'genders': genderObj}
+
+            # Check duplicate username
+            if Users.objects.filter(username=username).exists():
+                messages.error(request, 'Username is already taken. Please choose a different one.')
+                return render(request, 'user/AddUser.html', data)
+
+            # Check password match
+            if password != confirmPassword:
+                messages.error(request, 'Passwords do not match. Please try again.')
+                return render(request, 'user/AddUser.html', data)
 
             Users.objects.create(
                 full_name=fullName,
@@ -115,18 +95,77 @@ def add_user(request):
                 contact_number=contactNumber,
                 email=email,
                 username=username,
-                password=make_password(password) # HASH the password before saving it
-            ).save() # INSERT INTO tbl_users(full_name, gender, birth_date, address, contact_number, email, username, password) VALUES(fullName, gender, birthDate, address, contactNumber, email, username, password);
-        
+                password=make_password(password)
+            ).save()
+
             messages.success(request, 'User added successfully!')
             return redirect('/user/add')
-        else: 
-            genderObj = Genders.objects.all() # SELECT * FROM tbl_genders;
-
-            data = {
-                'genders': genderObj
-            }
-
-            return render(request, 'user/AddUser.html', data) 
+        else:
+            genderObj = Genders.objects.all()
+            data = {'genders': genderObj}
+            return render(request, 'user/AddUser.html', data)
     except Exception as e:
-        return HttpResponse(f'Error occurred during add user: {e}')  
+        return HttpResponse(f'Error occurred during add user: {e}')
+
+def edit_user(request, userId):
+    try:
+        userObj = Users.objects.select_related('gender').get(pk=userId)
+        genderObj = Genders.objects.all()
+
+        if request.method == 'POST':
+            fullName = request.POST.get('full_name')
+            gender = request.POST.get('gender')
+            birthDate = request.POST.get('birth_date')
+            address = request.POST.get('address')
+            contactNumber = request.POST.get('contact_number')
+            email = request.POST.get('email')
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            confirmPassword = request.POST.get('confirm_password')
+
+            data = {'user': userObj, 'genders': genderObj}
+
+            # Check duplicate username, excluding the current user
+            if Users.objects.filter(username=username).exclude(pk=userId).exists():
+                messages.error(request, 'Username is already taken. Please choose a different one.')
+                return render(request, 'user/EditUser.html', data)
+
+            # Check password match only if a new password was entered
+            if password:
+                if password != confirmPassword:
+                    messages.error(request, 'Passwords do not match. Please try again.')
+                    return render(request, 'user/EditUser.html', data)
+                userObj.password = make_password(password)
+
+            userObj.full_name = fullName
+            userObj.gender = Genders.objects.get(pk=gender)
+            userObj.birth_date = birthDate
+            userObj.address = address
+            userObj.contact_number = contactNumber
+            userObj.email = email
+            userObj.username = username
+            userObj.save()
+
+            messages.success(request, 'User updated successfully!')
+
+        data = {'user': userObj, 'genders': genderObj}
+        return render(request, 'user/EditUser.html', data)
+
+    except Exception as e:
+        return HttpResponse(f'Error occurred during edit user: {e}')
+
+
+def delete_user(request, userId):
+    try:
+        userObj = Users.objects.get(pk=userId)
+
+        if request.method == 'POST':
+            userObj.delete()
+            messages.success(request, 'User deleted successfully!')
+            return redirect('/user/list')
+
+        data = {'user': userObj}
+        return render(request, 'user/DeleteUser.html', data)
+
+    except Exception as e:
+        return HttpResponse(f'Error occurred during delete user: {e}')
